@@ -1,25 +1,18 @@
-const express = require('express');
-const request = require('request');
-const cors = require('cors');
+const axios = require('axios');
 
-const app = express();
-app.use(cors()); // Habilita CORS para evitar bloqueios no navegador
-
-app.get('/proxy', (req, res) => {
+export default async function handler(req, res) {
   const fileUrl = req.query.url;
 
   if (!fileUrl) {
     return res.status(400).send('Erro: Parâmetro "url" ausente');
   }
 
-  console.log(`Baixando: ${fileUrl}`);
-
-  // Faz a requisição para o servidor HTTP e redireciona o conteúdo
-  request
-    .get(fileUrl)
-    .on('error', (err) => res.status(500).send(`Erro ao baixar: ${err.message}`))
-    .pipe(res);
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+  try {
+    const response = await axios.get(fileUrl, { responseType: 'arraybuffer' });
+    res.setHeader('Content-Type', 'application/octet-stream');
+    res.setHeader('Content-Disposition', 'attachment; filename="lista.m3u"');
+    res.send(response.data);
+  } catch (error) {
+    res.status(500).send('Erro ao baixar o arquivo');
+  }
+}
