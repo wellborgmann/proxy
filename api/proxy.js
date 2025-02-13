@@ -1,10 +1,10 @@
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
 module.exports = function handler(req, res) {
-  const targetUrl = req.query.url;
+  const targetUrl = req.query.url; // Captura a URL do parâmetro "url"
 
   if (!targetUrl) {
-    return res.status(400).send('URL missing in query parameter');
+    return res.status(400).send('Erro: Parâmetro "url" ausente');
   }
 
   const proxy = createProxyMiddleware({
@@ -12,22 +12,20 @@ module.exports = function handler(req, res) {
     changeOrigin: true,
     secure: false,
     followRedirects: true,
+    selfHandleResponse: true, // Permite manipular manualmente a resposta
     onProxyRes: (proxyRes, req, res) => {
-      // Copiar o Content-Type correto
-      const contentType = proxyRes.headers['content-type'];
-      res.setHeader('Content-Type', contentType);
+      // Copia todos os cabeçalhos para manter a resposta original
+      Object.keys(proxyRes.headers).forEach((key) => {
+        res.setHeader(key, proxyRes.headers[key]);
+      });
 
-      // Se o conteúdo for um arquivo para download, pode ser necessário manipular o Content-Disposition
-      const contentDisposition = proxyRes.headers['content-disposition'];
-      if (contentDisposition) {
-        res.setHeader('Content-Disposition', contentDisposition);
+      // Força o download do arquivo
+      if (!res.getHeader('Content-Disposition')) {
+        res.setHeader('Content-Disposition', 'attachment');
       }
 
-      // Verificar e manipular codificação, se necessário
-      if (contentType && contentType.includes('application/octet-stream')) {
-        // Caso seja um arquivo binário (ex: .m3u ou .mp4), processar adequadamente
-        res.setHeader('Content-Encoding', 'binary');
-      }
+      // Stream da resposta para o cliente
+      proxyRes.pipe(res);
     },
   });
 
