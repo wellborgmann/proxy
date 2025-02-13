@@ -11,6 +11,7 @@ export default function handler(req, res) {
     pathRewrite: {
       '^/api/proxy': '',                   // Opcional: remova '/api/proxy' do caminho da URL
     },
+     followRedirects: true,   
   });
 
   return proxy(req, res);  // Executa o proxy
