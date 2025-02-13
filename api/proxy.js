@@ -3,7 +3,7 @@ const { createServer } = require("http");
 const https = require("https");
 const http = require("http");
 const path = require("path");
-const httpServer = createServer(app);
+
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
@@ -17,7 +17,7 @@ const sessionMiddleware = session({
   },
 });
 
-
+const app = express();
 app.use(sessionMiddleware);
 app.use(cookieParser());
 app.use(cors());
@@ -25,7 +25,7 @@ app.use(bodyParser.json({ limit: "50mb" }));
 app.use(express.json({ limit: "50mb" })); // Certifique-se de que esta linha também esteja presente
 
 
-
+const httpServer = createServer(app);
 app.use("/download", (req, res, next) => {
   const targetUrl = req.query.url;
 
