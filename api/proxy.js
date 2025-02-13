@@ -321,7 +321,7 @@ module.exports = {
 
 
 
-const targetUrl = 'http://157.254.54.238:7000'; // Altere para a URL de destino do seu servidor HLS
+const targetUrl = 'https://proxy-lake-three.vercel.app:7000'; // Altere para a URL de destino do seu servidor HLS
 
 app.use('/live', createProxyMiddleware({
   target: targetUrl,
