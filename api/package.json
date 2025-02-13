@@ -1,0 +1,25 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "Projeto proxy com Vercel",
+  "main": "api/proxy.js",
+  "scripts": {
+    "dev": "vercel dev", 
+    "build": "vercel build", 
+    "start": "vercel start"
+  },
+  "dependencies": {
+    "http-proxy-middleware": "^2.0.6"
+  },
+  "devDependencies": {},
+  "engines": {
+    "node": "16.x"
+  },
+  "vercel": {
+    "functions": {
+      "api/proxy.js": {
+        "maxDuration": 10
+      }
+    }
+  }
+}
