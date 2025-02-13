@@ -8,14 +8,26 @@ module.exports = function handler(req, res) {
   }
 
   const proxy = createProxyMiddleware({
-    target: targetUrl,  // URL de destino
-    changeOrigin: true,  // Mudar a origem do cabeçalho para o destino
-    secure: false,       // Desabilitar a verificação SSL
-    followRedirects: true,  // Seguir redirecionamentos
+    target: targetUrl,
+    changeOrigin: true,
+    secure: false,
+    followRedirects: true,
     onProxyRes: (proxyRes, req, res) => {
-      // Manter os cabeçalhos de resposta do servidor de destino
-      res.setHeader('Content-Type', proxyRes.headers['content-type']);
-      res.setHeader('Content-Disposition', proxyRes.headers['content-disposition']);
+      // Copiar o Content-Type correto
+      const contentType = proxyRes.headers['content-type'];
+      res.setHeader('Content-Type', contentType);
+
+      // Se o conteúdo for um arquivo para download, pode ser necessário manipular o Content-Disposition
+      const contentDisposition = proxyRes.headers['content-disposition'];
+      if (contentDisposition) {
+        res.setHeader('Content-Disposition', contentDisposition);
+      }
+
+      // Verificar e manipular codificação, se necessário
+      if (contentType && contentType.includes('application/octet-stream')) {
+        // Caso seja um arquivo binário (ex: .m3u ou .mp4), processar adequadamente
+        res.setHeader('Content-Encoding', 'binary');
+      }
     },
   });
 
