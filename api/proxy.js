@@ -1,33 +1,25 @@
-const { createProxyMiddleware } = require('http-proxy-middleware');
+const express = require('express');
+const request = require('request');
+const cors = require('cors');
 
-module.exports = function handler(req, res) {
-  const targetUrl = req.query.url; // Captura a URL do parâmetro "url"
+const app = express();
+app.use(cors()); // Habilita CORS para evitar bloqueios no navegador
 
-  if (!targetUrl) {
+app.get('/proxy', (req, res) => {
+  const fileUrl = req.query.url;
+
+  if (!fileUrl) {
     return res.status(400).send('Erro: Parâmetro "url" ausente');
   }
 
-  const proxy = createProxyMiddleware({
-    target: targetUrl,
-    changeOrigin: true,
-    secure: false,
-    followRedirects: true,
-    selfHandleResponse: true, // Permite manipular manualmente a resposta
-    onProxyRes: (proxyRes, req, res) => {
-      // Copia todos os cabeçalhos para manter a resposta original
-      Object.keys(proxyRes.headers).forEach((key) => {
-        res.setHeader(key, proxyRes.headers[key]);
-      });
+  console.log(`Baixando: ${fileUrl}`);
 
-      // Força o download do arquivo
-      if (!res.getHeader('Content-Disposition')) {
-        res.setHeader('Content-Disposition', 'attachment');
-      }
+  // Faz a requisição para o servidor HTTP e redireciona o conteúdo
+  request
+    .get(fileUrl)
+    .on('error', (err) => res.status(500).send(`Erro ao baixar: ${err.message}`))
+    .pipe(res);
+});
 
-      // Stream da resposta para o cliente
-      proxyRes.pipe(res);
-    },
-  });
-
-  return proxy(req, res);
-};
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
