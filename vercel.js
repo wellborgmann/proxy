@@ -11,5 +11,8 @@
       "src": "/api/proxy/(.*)",
       "dest": "/api/proxy"
     }
-  ]
+  ],
+     "env": {
+    "NODE_OPTIONS": "--no-deprecation"
+  }
 }
